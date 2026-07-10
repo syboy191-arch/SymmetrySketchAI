@@ -76,3 +76,34 @@ SymmetrySketchAI/
   assets/
 
   models/
+
+  # Updated Structure (Milestone 4C)
+
+SymmetrySketchAI/
+
+    core/
+
+    config/
+
+    domain/
+        entities/
+
+    vision/
+        utils/
+        models/
+
+    examples/            <- new (Milestone 4C)
+        __init__.py
+        vision_demo.py
+
+    tests/
+        unit/
+        integration/     <- new (Milestone 4C)
+            __init__.py
+            test_vision_pipeline.py
+
+    docs/
+
+    assets/
+
+    models/
