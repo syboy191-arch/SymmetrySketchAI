@@ -25,13 +25,9 @@ The project should be built as if it were a commercial desktop application.
 
 # Current Development Phase
 
-Phase 3A
+Milestone 4B — Gesture Recognition (complete)
 
-Infrastructure
-
-Current module:
-
-core/events.py
+Next: Milestone 4C — Vision Integration Demo
 
 ---
 
@@ -81,21 +77,37 @@ Nothing is permanently painted onto the canvas.
 
 ---
 
+# Vision Layer Data Flow
+
+Camera
+→ HandTracker            (OpenCV + MediaPipe, isolated here)
+→ TrackerResult          (project-owned value object, one per frame)
+→ GestureEngine          (smoothing + debounce + motion + velocity)
+→ GestureEvent(s)        (immutable, consumed by the Stroke Engine)
+
+The `GestureEngine` owns a `LandmarkSmoother` and a stateless
+`GestureClassifier`. The classifier decides the pose of a single frame;
+the engine decides what the user is doing over time (confirmation,
+swipes, transitions) and emits `GestureEvent`s, optionally publishing
+`GestureRecognizedEvent` on the shared `EventBus`.
+
+---
+
 # Current Status
 
 Completed:
 
-Core
+Core (incl. events + dependency_container)
 
 Domain
 
+Vision Foundation (tracker, landmarks, hand, tracker_result)
+
+Gesture Recognition (smoothing, classifier, engine)
+
 Remaining:
 
-Infrastructure
-
-Vision
-
-Gesture
+Vision Integration Demo (4C)
 
 Drawing
 

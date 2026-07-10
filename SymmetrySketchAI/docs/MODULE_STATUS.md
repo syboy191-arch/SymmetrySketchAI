@@ -14,6 +14,10 @@
 
 ✅ paths.py
 
+✅ events.py
+
+✅ dependency_container.py
+
 ---
 
 ### Domain
@@ -36,6 +40,30 @@
 
 ---
 
+### Vision — Foundation
+
+✅ tracker.py
+
+✅ tracker_result.py
+
+✅ hand.py
+
+✅ landmarks.py
+
+✅ utils/coordinate_utils.py
+
+---
+
+### Vision — Gesture Recognition (Milestone 4B)
+
+✅ smoothing.py
+
+✅ gesture_classifier.py
+
+✅ gesture_engine.py
+
+---
+
 ### Tests
 
 ✅ test_point.py
@@ -52,19 +80,24 @@
 
 ✅ test_gesture_event.py
 
+✅ test_smoothing.py
+
+✅ test_gesture_classifier.py
+
+✅ test_gesture_engine.py
+
 ---
 
 # Current Phase
 
-Phase 3A
-
-Infrastructure
+Milestone 4B — Gesture Recognition **complete**
 
 ---
 
 # Next Module
 
-core/events.py
+Milestone 4C — Vision Integration Demo
+(`demo/vision_demo.py` + wiring, see `NEXT_MODULE.md`)
 
 ---
 
@@ -72,6 +105,10 @@ core/events.py
 
 Approximately
 
-12%
+32%
 
 of the complete project.
+
+> Note: this file previously reported "Phase 3A / core/events.py" but the
+> Infrastructure and Vision Foundation phases had already shipped on
+> `main`. Status is now reconciled with the actual repository contents.
