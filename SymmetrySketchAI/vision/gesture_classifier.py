@@ -40,14 +40,29 @@ from vision.landmarks import HandLandmarkIndex, Landmarks
 # Tuning constants (no magic numbers). All in normalized [0, 1] image space.
 # ---------------------------------------------------------------------------
 
-PINCH_DISTANCE_THRESHOLD: Final[float] = 0.06
+PINCH_DISTANCE_THRESHOLD: Final[float] = 0.05
 """Max 2D thumb-tip/index-tip distance to be considered a pinch."""
+
+PINCH_RELEASE_DISTANCE_THRESHOLD: Final[float] = 0.075
+"""Distance above which a pinch is definitely not considered active."""
+
+PINCH_INDEX_CURL_THRESHOLD: Final[float] = 0.02
+"""Max normalized index extension score for a pinch candidate."""
+
+PINCH_OTHER_FINGER_CURL_THRESHOLD: Final[float] = 0.10
+"""Max normalized extension score for non-pinch support fingers."""
+
+PINCH_CONFIDENCE_GAIN: Final[float] = 1.8
+"""Scales pinch evidence into a [0, 1] confidence."""
 
 FINGER_EXTENSION_DEADZONE: Final[float] = 0.02
 """Minimum normalized extension score before a digit counts as extended."""
 
 CONFIDENCE_GAIN: Final[float] = 2.5
 """Scales the mean digit-decision margin into a [0, 1] confidence."""
+
+UNKNOWN_CONFIDENCE_SCALE: Final[float] = 0.35
+"""Keeps UNKNOWN confidence low but non-zero for near-miss poses."""
 
 # Canonical (thumb, index, middle, ring, pinky) extension patterns.
 _PATTERNS: Final[dict[tuple[bool, bool, bool, bool, bool], GestureType]] = {
@@ -83,17 +98,33 @@ class GestureClassifier:
     sensitivity without editing this class.
     """
 
-    __slots__ = ("_pinch_threshold", "_deadzone", "_confidence_gain")
+    __slots__ = (
+        "_pinch_threshold",
+        "_pinch_release_threshold",
+        "_pinch_index_curl_threshold",
+        "_pinch_other_finger_curl_threshold",
+        "_deadzone",
+        "_confidence_gain",
+        "_pinch_confidence_gain",
+    )
 
     def __init__(
         self,
         pinch_threshold: float = PINCH_DISTANCE_THRESHOLD,
         extension_deadzone: float = FINGER_EXTENSION_DEADZONE,
         confidence_gain: float = CONFIDENCE_GAIN,
+        pinch_release_threshold: float = PINCH_RELEASE_DISTANCE_THRESHOLD,
+        pinch_index_curl_threshold: float = PINCH_INDEX_CURL_THRESHOLD,
+        pinch_other_finger_curl_threshold: float = PINCH_OTHER_FINGER_CURL_THRESHOLD,
+        pinch_confidence_gain: float = PINCH_CONFIDENCE_GAIN,
     ) -> None:
         self._pinch_threshold = pinch_threshold
+        self._pinch_release_threshold = max(pinch_release_threshold, pinch_threshold)
+        self._pinch_index_curl_threshold = pinch_index_curl_threshold
+        self._pinch_other_finger_curl_threshold = pinch_other_finger_curl_threshold
         self._deadzone = extension_deadzone
         self._confidence_gain = confidence_gain
+        self._pinch_confidence_gain = pinch_confidence_gain
 
     def classify(self, hand: Hand) -> GestureClassification:
         """Classify ``hand`` into a static gesture.
@@ -104,23 +135,16 @@ class GestureClassifier:
         """
         try:
             landmarks = hand.landmarks
+            states, margins, scores = self._digit_states(landmarks, hand.label)
 
-            # Pinch takes priority: thumb and index tips nearly touching,
-            # regardless of the other fingers' state.
-            pinch_distance = landmarks.thumb_tip.distance_to_2d(
-                landmarks.index_finger_tip
-            )
-            if pinch_distance < self._pinch_threshold:
-                confidence = _clamp01(
-                    (self._pinch_threshold - pinch_distance)
-                    / self._pinch_threshold
-                )
-                return GestureClassification(GestureType.PINCH, confidence)
+            pinch = self._pinch_classification(landmarks, scores)
+            if pinch is not None:
+                return pinch
 
-            states, margins = self._digit_states(landmarks, hand.label)
             gesture = _PATTERNS.get(states)
             if gesture is None:
-                return GestureClassification(GestureType.UNKNOWN, 0.0)
+                confidence = _clamp01((sum(margins) / len(margins)) * UNKNOWN_CONFIDENCE_SCALE)
+                return GestureClassification(GestureType.UNKNOWN, confidence)
 
             confidence = _clamp01(
                 (sum(margins) / len(margins)) * self._confidence_gain
@@ -134,12 +158,70 @@ class GestureClassifier:
             ) from error
 
     # ------------------------------------------------------------------
+    # Internal: pinch
+    # ------------------------------------------------------------------
+    def _pinch_classification(
+        self,
+        landmarks: Landmarks,
+        scores: tuple[float, float, float, float, float],
+    ) -> GestureClassification | None:
+        """Return a pinch classification when pinch evidence is strong enough.
+
+        Pinch is intentionally stricter than simple thumb/index proximity:
+        the index finger should not still look strongly extended and the
+        remaining fingers should generally stay curled, reducing fist/pinch
+        confusion and open-palm false positives.
+        """
+        pinch_distance = landmarks.thumb_tip.distance_to_2d(
+            landmarks.index_finger_tip
+        )
+        if pinch_distance >= self._pinch_release_threshold:
+            return None
+
+        _, index_score, middle_score, ring_score, pinky_score = scores
+        other_finger_max = max(middle_score, ring_score, pinky_score)
+
+        distance_score = _clamp01(
+            (self._pinch_release_threshold - pinch_distance)
+            / max(self._pinch_release_threshold - self._pinch_threshold, 1e-6)
+        )
+        index_curl_score = _clamp01(
+            1.0 - max(index_score, 0.0) / max(self._pinch_index_curl_threshold, 1e-6)
+        )
+        support_curl_score = _clamp01(
+            1.0
+            - max(other_finger_max, 0.0)
+            / max(self._pinch_other_finger_curl_threshold, 1e-6)
+        )
+
+        if pinch_distance >= self._pinch_threshold and distance_score < 0.55:
+            return None
+        if index_score > self._pinch_index_curl_threshold:
+            return None
+        if other_finger_max > self._pinch_other_finger_curl_threshold:
+            return None
+
+        confidence = _clamp01(
+            (
+                (distance_score * 0.55)
+                + (index_curl_score * 0.30)
+                + (support_curl_score * 0.15)
+            )
+            * self._pinch_confidence_gain
+        )
+        return GestureClassification(GestureType.PINCH, confidence)
+
+    # ------------------------------------------------------------------
     # Internal: per-digit extension detection
     # ------------------------------------------------------------------
     def _digit_states(
         self, landmarks: Landmarks, label: HandLabel
-    ) -> tuple[tuple[bool, bool, bool, bool, bool], tuple[float, ...]]:
-        """Return ``((thumb, index, middle, ring, pinky), margins)``.
+    ) -> tuple[
+        tuple[bool, bool, bool, bool, bool],
+        tuple[float, ...],
+        tuple[float, float, float, float, float],
+    ]:
+        """Return ``(states, margins, scores)`` for the five digits.
 
         A finger is "extended" when its tip is above (smaller image ``y``
         than) its PIP joint. The thumb is handled separately along ``x``
@@ -150,7 +232,6 @@ class GestureClassifier:
         hand_height = max(max_y - min_y, 1e-6)
         hand_width = max(max_x - min_x, 1e-6)
 
-        # Four fingers: (tip index, pip index).
         finger_joints = (
             (HandLandmarkIndex.INDEX_FINGER_TIP, HandLandmarkIndex.INDEX_FINGER_PIP),
             (HandLandmarkIndex.MIDDLE_FINGER_TIP, HandLandmarkIndex.MIDDLE_FINGER_PIP),
@@ -160,14 +241,16 @@ class GestureClassifier:
 
         finger_states: list[bool] = []
         margins: list[float] = []
+        finger_scores: list[float] = []
         for tip_index, pip_index in finger_joints:
             tip = landmarks.by_index(tip_index)
             pip = landmarks.by_index(pip_index)
-            score = (pip.y - tip.y) / hand_height  # + when tip above pip
+            score = (pip.y - tip.y) / hand_height
+            finger_scores.append(score)
             finger_states.append(score > self._deadzone)
             margins.append(abs(score))
 
-        thumb_extended, thumb_margin = self._thumb_state(
+        thumb_extended, thumb_margin, thumb_score = self._thumb_state(
             landmarks, label, hand_width
         )
 
@@ -179,12 +262,13 @@ class GestureClassifier:
             finger_states[3],
         )
         all_margins = (thumb_margin, *margins)
-        return states, all_margins
+        all_scores = (thumb_score, *finger_scores)
+        return states, all_margins, all_scores
 
     def _thumb_state(
         self, landmarks: Landmarks, label: HandLabel, hand_width: float
-    ) -> tuple[bool, float]:
-        """Return ``(extended, margin)`` for the thumb.
+    ) -> tuple[bool, float, float]:
+        """Return ``(extended, margin, score)`` for the thumb.
 
         The thumb points away from the palm horizontally. For a right
         hand the extended thumb sits to the left of its MCP (smaller
@@ -200,4 +284,4 @@ class GestureClassifier:
             score = (tip.x - mcp.x) / hand_width
         else:
             score = abs(tip.x - mcp.x) / hand_width - self._deadzone
-        return score > self._deadzone, abs(score)
+        return score > self._deadzone, abs(score), score

@@ -1,3 +1,4 @@
+# gesture_engine.py
 """The stateful Gesture Engine -- turns tracked hands into GestureEvents.
 
 Design rationale:
@@ -47,7 +48,7 @@ from domain.entities.gesture_event import GestureEvent
 from vision.gesture_classifier import GestureClassifier
 from vision.hand import Hand
 from vision.landmarks import Landmarks
-from vision.smoothing import LandmarkSmoother
+from vision.smoothing import LandmarkSmoother, MovingAverage
 from vision.tracker_result import TrackerResult
 
 _logger = get_logger(__name__)
@@ -70,6 +71,18 @@ SWIPE_MIN_SPEED: Final[float] = 0.6
 
 PINCH_PRESSURE_RANGE: Final[float] = 0.08
 """Thumb/index distance mapped to the [0, 1] pinch pressure estimate."""
+
+CONFIDENCE_SMOOTHING_WINDOW: Final[int] = 4
+"""Rolling confidence average size for stable emitted confidence."""
+
+GESTURE_RELEASE_MULTIPLIER: Final[float] = 1.5
+"""How much harder it is to drop a confirmed gesture than to keep it."""
+
+UNKNOWN_GESTURE_HOLD_MULTIPLIER: Final[float] = 1.5
+"""UNKNOWN should need more evidence before replacing a known gesture."""
+
+MIN_CONFIDENCE_FLOOR: Final[float] = 0.05
+"""Keeps emitted confidence decays smooth instead of snapping to zero."""
 
 
 def _clamp01(value: float) -> float:
@@ -94,6 +107,9 @@ class _HandState:
     """Mutable per-hand tracking state, keyed by :class:`HandLabel`."""
 
     smoother: LandmarkSmoother
+    confidence_smoother: MovingAverage = field(
+        default_factory=lambda: MovingAverage(CONFIDENCE_SMOOTHING_WINDOW)
+    )
     candidate: GestureType | None = None
     streak: int = 0
     confirmed: GestureType = GestureType.NONE
@@ -194,6 +210,8 @@ class GestureEngine:
                 state.streak = 0
                 state.confirmed = gesture
                 state.confirmed_confidence = confidence
+                state.confidence_smoother.reset()
+                state.confidence_smoother.add(confidence)
                 state.history.clear()
                 pressure = MAX_PRESSURE
             else:
@@ -237,7 +255,7 @@ class GestureEngine:
         self._states.clear()
 
     # ------------------------------------------------------------------
-    # Internal: temporal confirmation (debounce)
+    # Internal: temporal confirmation (debounce + hysteresis)
     # ------------------------------------------------------------------
     def _confirm(
         self, state: _HandState, raw: GestureType, raw_confidence: float
@@ -246,19 +264,72 @@ class GestureEngine:
 
         A candidate must persist for ``gesture_hold_frames_to_confirm``
         consecutive frames before it replaces the confirmed gesture.
-        Until then, the last confirmed gesture keeps being emitted.
+        Confirmed gestures also decay more slowly than they are acquired,
+        reducing rapid flicker during noisy transitions.
         """
+        smoothed_raw_confidence = _clamp01(state.confidence_smoother.add(raw_confidence))
+
+        if raw == state.confirmed:
+            state.candidate = raw
+            state.streak = 0
+            state.confirmed_confidence = self._blend_confidence(
+                state.confirmed_confidence,
+                smoothed_raw_confidence,
+                rising=True,
+            )
+            return state.confirmed, state.confirmed_confidence
+
         if raw == state.candidate:
             state.streak += 1
         else:
             state.candidate = raw
             state.streak = 1
 
-        if state.streak >= self._config.gesture_hold_frames_to_confirm:
+        required_frames = self._required_frames(state.confirmed, raw)
+        if state.streak >= required_frames:
             state.confirmed = raw
-            state.confirmed_confidence = raw_confidence
+            state.confirmed_confidence = max(
+                smoothed_raw_confidence,
+                MIN_CONFIDENCE_FLOOR if raw is not GestureType.UNKNOWN else 0.0,
+            )
+            state.candidate = raw
+            state.streak = 0
+            state.confidence_smoother.reset()
+            state.confidence_smoother.add(raw_confidence)
+            return state.confirmed, state.confirmed_confidence
 
+        state.confirmed_confidence = self._blend_confidence(
+            state.confirmed_confidence,
+            smoothed_raw_confidence,
+            rising=False,
+        )
         return state.confirmed, state.confirmed_confidence
+
+    def _required_frames(
+        self, confirmed: GestureType, raw: GestureType
+    ) -> int:
+        """Return how many frames are required to replace ``confirmed``."""
+        base = self._config.gesture_hold_frames_to_confirm
+
+        if confirmed is GestureType.NONE:
+            return base
+        if raw is GestureType.UNKNOWN:
+            return max(base + 1, int(math.ceil(base * UNKNOWN_GESTURE_HOLD_MULTIPLIER)))
+        if confirmed is not GestureType.NONE and raw is not confirmed:
+            return max(base + 1, int(math.ceil(base * GESTURE_RELEASE_MULTIPLIER)))
+        return base
+
+    def _blend_confidence(
+        self,
+        previous: float,
+        target: float,
+        *,
+        rising: bool,
+    ) -> float:
+        """Blend confidence gradually to avoid abrupt visible jumps."""
+        alpha = 0.55 if rising else 0.20
+        blended = previous + ((target - previous) * alpha)
+        return _clamp01(blended)
 
     # ------------------------------------------------------------------
     # Internal: motion
@@ -310,7 +381,7 @@ class GestureEngine:
         dy = y_now - y0
         if abs(dx) < SWIPE_MIN_DISPLACEMENT:
             return None
-        if abs(dx) <= abs(dy):  # must be horizontal-dominant
+        if abs(dx) <= abs(dy):
             return None
         if abs(dx) / dt < SWIPE_MIN_SPEED:
             return None
