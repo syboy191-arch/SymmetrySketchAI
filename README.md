@@ -140,11 +140,18 @@ Business logic remains independent from:
 ```text
 SymmetrySketchAI/
 
-├── ai/                        # Future AI-assisted tools
 │
-├── assets/                    # Icons, images, UI assets
+├── README.md
+├── requirements.txt
+├── requirements-dev.txt
+├── .gitignore
 │
-├── config/                    # Centralized configuration
+├── ai/
+│
+├── assets/
+│
+├── config/
+│   ├── __init__.py
 │   ├── app_config.py
 │   ├── tracker_config.py
 │   ├── renderer_config.py
@@ -152,16 +159,18 @@ SymmetrySketchAI/
 │   ├── export_config.py
 │   └── ui_config.py
 │
-├── core/                      # Shared infrastructure
+├── core/
+│   ├── __init__.py
 │   ├── constants.py
+│   ├── dependency_container.py
 │   ├── enums.py
+│   ├── events.py
 │   ├── exceptions.py
 │   ├── logger.py
 │   ├── paths.py
-│   ├── events.py
-│   └── dependency_container.py
+│   └── utils/
 │
-├── docs/                      # Project documentation
+├── docs/
 │   ├── AI_CONTEXT.md
 │   ├── ARCHITECTURE.md
 │   ├── CHANGELOG.md
@@ -171,47 +180,77 @@ SymmetrySketchAI/
 │   └── PROJECT_TREE.md
 │
 ├── domain/
+│   ├── __init__.py
 │   └── entities/
-│       ├── ids.py
-│       ├── point.py
-│       ├── stroke.py
-│       ├── layer.py
+│       ├── __init__.py
 │       ├── brush.py
 │       ├── canvas_state.py
+│       ├── gesture_event.py
+│       ├── ids.py
+│       ├── layer.py
+│       ├── point.py
 │       ├── project.py
-│       └── gesture_event.py
+│       └── stroke.py
 │
-├── drawing/                   # Future drawing engine
+├── drawing/
+│   ├── __init__.py
+│   └── stroke_engine.py
 │
-├── export/                    # Future export system
+├── examples/
+│   ├── __init__.py
+│   └── vision_demo.py
+│
+├── export/
 │
 ├── models/
 │
-├── persistence/               # Future save/load system
+├── persistence/
 │
 ├── tests/
+│   ├── __init__.py
+│   ├── integration/
+│   │   ├── __init__.py
+│   │   └── test_vision_pipeline.py
+│   │
 │   └── unit/
+│       ├── __init__.py
+│       ├── test_brush.py
+│       ├── test_canvas_state.py
+│       ├── test_events.py
+│       ├── test_gesture_classifier.py
+│       ├── test_gesture_engine.py
+│       ├── test_gesture_event.py
+│       ├── test_hand.py
+│       ├── test_landmarks.py
+│       ├── test_layer.py
+│       ├── test_point.py
+│       ├── test_project.py
+│       ├── test_smoothing.py
+│       ├── test_stroke.py
+│       ├── test_stroke_engine.py
+│       ├── test_tracker.py
+│       └── test_tracker_result.py
 │
-├── timeline/                  # Future history system
+├── timeline/
 │
-├── ui/                        # Future user interface
+├── ui/
 │
-├── vision/
-│   ├── tracker.py
-│   ├── tracker_result.py
-│   ├── hand.py
-│   ├── landmarks.py
-│   ├── gesture_engine.py
-│   ├── gesture_classifier.py
-│   ├── smoothing.py
-│   ├── models/
-│   │   └── hand_landmarker.task
-│   └── utils/
-│       └── coordinate_utils.py
-│
-├── .gitignore
-├── README.md
-└── requirements.txt
+└── vision/
+    ├── __init__.py
+    ├── gesture_classifier.py
+    ├── gesture_engine.py
+    ├── hand.py
+    ├── landmarks.py
+    ├── smoothing.py
+    ├── tracker.py
+    ├── tracker_result.py
+    │
+    ├── models/
+    │   └── hand_landmarker.task
+    │
+    └── utils/
+        ├── __init__.py
+        └── coordinate_utils.py
 ```
 
 ---
@@ -354,6 +393,40 @@ Will include:
 
 ---
 
+------------------------------------------------------------------------
+
+# 🧠 Technology Stack
+
+-   Python 3.13+
+-   OpenCV
+-   MediaPipe Tasks API
+-   NumPy
+-   PyTest
+-   Dataclasses
+-   Type Hints
+-   Git & GitHub
+
+------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------
+
+# 🔄 Development Workflow
+
+The GitHub repository is the **single source of truth**.
+
+Each milestone follows:
+
+1.  Implement one subsystem
+2.  Review architecture
+3.  Run tests
+4.  Update documentation
+5.  Commit & Push
+6.  Begin next milestone
+
+------------------------------------------------------------------------
+
+
 # 📐 Engineering Standards
 
 Every module follows:
@@ -383,35 +456,69 @@ Each module includes corresponding unit tests where applicable.
 
 ---
 
+------------------------------------------------------------------------
+
+# 🚀 Installation
+
+``` bash
+git clone <https://github.com/syboy191-arch/SymmetrySketchAI>
+cd SymmetrySketchAI
+
+python -m venv .venv
+
+# Windows
+.venv\Scripts\activate
+
+pip install -r requirements.txt
+```
+
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+
+# ▶ Running
+
+Vision demo:
+
+``` bash
+python -m examples.vision_demo
+```
+
+Run tests:
+
+``` bash
+pytest
+```
+
+------------------------------------------------------------------------
+
+
 # 🚀 Current Development Status
 
-Current milestone:
+------------------------------------------------------------------------
 
-✅ Core Foundation
+# ✅ Milestone Progress
 
-✅ Domain Model
+  Milestone             Status
+  --------------------- --------
+  Core Foundation       ✅
+  Domain Layer          ✅
+  Infrastructure        ✅
+  Vision Foundation     ✅
+  Gesture Recognition   ✅
+  Vision Integration    ✅
+  Gesture Refinement    ✅
+  Stroke Engine (5A)    ✅
+  Stroke Manager (5B)   ⏳
+  Renderer              ⏳
+  Symmetry Engine       ⏳
+  Brush Engine          ⏳
+  Timeline              ⏳
+  Export                ⏳
+  UI                    ⏳
+  AI Features           ⏳
 
-✅ Infrastructure Foundation
-
-✅ Vision Foundation
-
-🟡 Gesture Recognition
-
-⬜ Drawing Engine
-
-⬜ Rendering System
-
-⬜ Timeline
-
-⬜ Persistence
-
-⬜ Export
-
-⬜ User Interface
-
-⬜ AI Features
-
-⬜ Plugins
+------------------------------------------------------------------------
 
 ---
 
@@ -466,6 +573,23 @@ AI Features
 Plugin System
 
 ---
+
+------------------------------------------------------------------------
+
+#  Roadmap
+
+Next major milestones:
+
+-   Milestone 5B -- Stroke Manager
+-   Milestone 5C -- Renderer
+-   Milestone 5D -- Symmetry Engine
+-   Milestone 6 -- Brush Engine
+-   Timeline & Replay
+-   Export System
+-   AI Features
+
+------------------------------------------------------------------------
+
 
 # 🤝 Contributing
 

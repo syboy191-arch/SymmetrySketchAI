@@ -1,126 +1,221 @@
 # SymmetrySketch AI
 
-## Project Overview
+# Project Overview
 
 SymmetrySketch AI is a production-quality desktop application written in Python.
 
-The application allows users to create symmetrical artwork using real-time hand tracking through a webcam.
+The application enables users to create symmetrical digital artwork using real-time hand tracking and gesture recognition through a webcam.
 
-This project is designed to demonstrate:
+Unlike a traditional virtual painter, every drawing is represented internally as editable **Stroke** objects rather than permanently modifying pixels. This architecture enables advanced features such as undo/redo, replay, SVG export, symmetry correction, AI-assisted editing, and future animation support.
 
-- Software Engineering
-- Computer Vision
+The project is intended to demonstrate professional software engineering practices, including:
+
 - Clean Architecture
-- Object-Oriented Programming
+- Domain-Driven Design (DDD)
+- SOLID Principles
+- Dependency Injection
+- Event-Driven Architecture
+- Computer Vision
 - Real-Time Graphics
-- AI-assisted Drawing
+- Modular Software Design
+- Automated Testing
 
-This is NOT a tutorial project.
+This is **not** a tutorial project.
 
-This is NOT a prototype.
+This is **not** a prototype.
 
-The project should be built as if it were a commercial desktop application.
+The project is designed to resemble a production-quality desktop application.
 
 ---
 
-# Current Development Phase
+# Current Project Status
 
-Milestone 4B — Gesture Recognition (complete)
+## Completed Milestones
 
-Next: Milestone 4C — Vision Integration Demo
+### Phase 1
+
+- Core Infrastructure
+
+### Phase 2
+
+- Domain Layer
+
+### Phase 3
+
+- Infrastructure Layer
+- Event Bus
+- Dependency Injection
+
+### Milestone 4A
+
+- Vision Foundation
+- MediaPipe Tasks Integration
+- Camera Pipeline
+- Hand Tracking
+
+### Milestone 4B
+
+- Gesture Recognition
+- Gesture Classification
+- Landmark Smoothing
+
+### Milestone 4C
+
+- Vision Integration Demo
+- End-to-End Vision Pipeline
+- HUD
+- FPS Display
+- Landmark Rendering
+- Bounding Boxes
+
+### Milestone 4D
+
+- Gesture Recognition Refinement
+- Improved Classification Accuracy
+- Rule Ordering Improvements
+- Gesture Stability Improvements
+
+### Milestone 5A
+
+- Drawing Layer Introduced
+- Stroke Engine
+- Stroke Lifecycle
+- GestureEvent → Stroke Conversion
+- Unit Tests
+
+---
+
+# Current Architecture
+
+The project currently follows the pipeline:
+
+Camera
+
+↓
+
+Tracker
+
+↓
+
+TrackerResult
+
+↓
+
+Gesture Engine
+
+↓
+
+GestureEvent
+
+↓
+
+Stroke Engine
+
+↓
+
+Stroke Manager (Upcoming)
+
+↓
+
+Renderer (Upcoming)
+
+↓
+
+Canvas
 
 ---
 
 # Technology Stack
 
-Python 3.13+
-
-OpenCV
-
-MediaPipe Tasks API
-
-NumPy
-
-PyTest
-
-pathlib
-
-dataclasses
-
-Enums
-
-Type Hints
+- Python 3.13+
+- OpenCV
+- MediaPipe Tasks API
+- NumPy
+- PyTest
 
 ---
 
-# Design Philosophy
+# Architectural Principles
 
 The project follows:
 
 - Clean Architecture
-- Domain Driven Design
+- Domain-Driven Design
 - SOLID Principles
-- Event Driven Architecture
-- Object-Based Rendering
+- Event-Driven Design
+- Dependency Injection
+- Modular Components
+- Test-Driven Development
 
 ---
 
-# Rendering Philosophy
+# Vision Layer Status
 
-The renderer never owns artwork.
+The Vision subsystem is considered feature complete.
 
-Every drawing action creates a Stroke object.
+It includes:
 
-Rendering is performed every frame from Stroke objects.
+- Camera Capture
+- MediaPipe Integration
+- Hand Tracking
+- Landmark Detection
+- Gesture Recognition
+- Gesture Classification
+- Gesture Smoothing
+- Vision Integration Demo
 
-Nothing is permanently painted onto the canvas.
-
----
-
-# Vision Layer Data Flow
-
-Camera
-→ HandTracker            (OpenCV + MediaPipe, isolated here)
-→ TrackerResult          (project-owned value object, one per frame)
-→ GestureEngine          (smoothing + debounce + motion + velocity)
-→ GestureEvent(s)        (immutable, consumed by the Stroke Engine)
-
-The `GestureEngine` owns a `LandmarkSmoother` and a stateless
-`GestureClassifier`. The classifier decides the pose of a single frame;
-the engine decides what the user is doing over time (confirmation,
-swipes, transitions) and emits `GestureEvent`s, optionally publishing
-`GestureRecognizedEvent` on the shared `EventBus`.
+Only bug fixes and performance improvements should be made to this subsystem going forward.
 
 ---
 
-# Current Status
+# Drawing Layer Status
+
+The Drawing subsystem has begun.
 
 Completed:
 
-Core (incl. events + dependency_container)
+- Stroke Engine
 
-Domain
+Upcoming:
 
-Vision Foundation (tracker, landmarks, hand, tracker_result)
+- Stroke Manager
+- Renderer
+- Symmetry Engine
+- Brush Engine
 
-Gesture Recognition (smoothing, classifier, engine)
+---
 
-Remaining:
+# Future Roadmap
 
-Vision Integration Demo (4C)
+Upcoming milestones include:
 
-Drawing
+- Stroke Manager
+- Renderer
+- Canvas System
+- Symmetry Engine
+- Brush Engine
+- Undo / Redo
+- Timeline
+- Replay System
+- SVG Export
+- PNG Export
+- AI Shape Detection
+- AI Shape Correction
+- AI Symmetry Correction
+- Layer Editing
+- Animation Support
+- Plugin System
 
-Rendering
+---
 
-Timeline
+# Repository Policy
 
-Persistence
+The GitHub repository is the single source of truth.
 
-Export
+Documentation must always reflect the latest repository state.
 
-UI
+AI assistants contributing to the project should inspect the repository before implementing new functionality.
 
-AI
+The Vision subsystem should not be rewritten.
 
-Plugins
+Each milestone should modify only the modules within its defined scope.

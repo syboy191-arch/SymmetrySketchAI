@@ -1,158 +1,289 @@
 # Module Status
 
-## Completed
-
-### Core
-
-✅ constants.py
-
-✅ enums.py
-
-✅ exceptions.py
-
-✅ logger.py
-
-✅ paths.py
-
-✅ events.py
-
-✅ dependency_container.py
+Last Updated: July 2026
 
 ---
 
-### Domain
+# Overall Project Status
 
-✅ ids.py
+Current Milestone:
 
-✅ point.py
+> **Milestone 5A — Stroke Engine Foundation** ✅ Completed
 
-✅ stroke.py
+Current Development Phase:
 
-✅ layer.py
+> **Drawing Pipeline**
 
-✅ brush.py
+Overall Completion:
 
-✅ canvas_state.py
+> **Approximately 60%**
 
-✅ project.py
+The project has successfully completed the Core, Domain, Infrastructure, Vision, and initial Drawing foundation.
 
-✅ gesture_event.py
-
----
-
-### Vision — Foundation
-
-✅ tracker.py
-
-✅ tracker_result.py
-
-✅ hand.py
-
-✅ landmarks.py
-
-✅ utils/coordinate_utils.py
+The next milestone will extend the Drawing subsystem by introducing the Stroke Manager.
 
 ---
 
-### Vision — Gesture Recognition (Milestone 4B)
+# Completed Modules
 
-✅ smoothing.py
+## Core
 
-✅ gesture_classifier.py
+Status: ✅ Complete
 
-✅ gesture_engine.py
+Modules
 
----
-
-### Tests
-
-✅ test_point.py
-
-✅ test_stroke.py
-
-✅ test_layer.py
-
-✅ test_brush.py
-
-✅ test_canvas_state.py
-
-✅ test_project.py
-
-✅ test_gesture_event.py
-
-✅ test_smoothing.py
-
-✅ test_gesture_classifier.py
-
-✅ test_gesture_engine.py
+- constants.py
+- enums.py
+- exceptions.py
+- logger.py
+- paths.py
+- events.py
+- dependency_container.py
 
 ---
 
-# Current Phase
+## Configuration
 
-Milestone 4B — Gesture Recognition **complete**
+Status: ✅ Complete
 
----
+Modules
 
-# Next Module
-
-Milestone 4C — Vision Integration Demo
-(`demo/vision_demo.py` + wiring, see `NEXT_MODULE.md`)
-
----
-
-# Progress
-
-Approximately
-
-32%
-
-of the complete project.
-
-> Note: this file previously reported "Phase 3A / core/events.py" but the
-> Infrastructure and Vision Foundation phases had already shipped on
-> `main`. Status is now reconciled with the actual repository contents.### Vision (COMPLETE)
-
-✅ tracker.py (HandTracker)
-
-✅ tracker_result.py
-
-✅ hand.py
-
-✅ landmarks.py
-
-✅ gesture_classifier.py
-
-✅ gesture_engine.py
-
-✅ smoothing.py
-
-✅ utils/coordinate_utils.py
+- app_config.py
+- tracker_config.py
+- renderer_config.py
+- brush_config.py
+- export_config.py
+- ui_config.py
 
 ---
 
-### Examples
+## Domain
 
-✅ examples/vision_demo.py
+Status: ✅ Complete
+
+Entities
+
+- Point
+- Stroke
+- Layer
+- Brush
+- CanvasState
+- Project
+- GestureEvent
 
 ---
 
-### Integration Tests
+## Vision
 
-✅ test_vision_pipeline.py
+Status: ✅ Complete
+
+Modules
+
+- tracker.py
+- tracker_result.py
+- hand.py
+- landmarks.py
+- gesture_engine.py
+- gesture_classifier.py
+- smoothing.py
+
+Features
+
+- Webcam
+- MediaPipe Tasks API
+- Hand Tracking
+- Gesture Recognition
+- Gesture Classification
+- Gesture Smoothing
+- Vision Integration Demo
+
+The Vision subsystem is now considered **feature complete**.
+
+Only bug fixes and optimizations should be made going forward.
 
 ---
 
-# Milestone 4C
+## Drawing
 
-Vision Foundation + Gesture Recognition integrated and verified end-to-end.
+Status: 🟡 In Progress
 
-# Next Module
+Completed
 
-Milestone 5 -- Drawing Pipeline (Stroke Engine)
+- Stroke Engine
 
-# Progress
+Current Responsibilities
 
-Approximately 45% of the complete project (Core, Domain, Infrastructure,
-Vision + Gesture complete and integration-verified).
+- Convert GestureEvents into Stroke objects
+- Manage Stroke lifecycle
+- Create editable Stroke data
 
+Upcoming
+
+- Stroke Manager
+- Renderer
+- Symmetry Engine
+- Brush Engine
+
+---
+
+## Testing
+
+Status: ✅ Active
+
+Completed
+
+- Core unit tests
+- Domain unit tests
+- Vision unit tests
+- Vision integration tests
+- Stroke Engine unit tests
+
+Future
+
+- Renderer integration tests
+- Drawing integration tests
+- Performance benchmarks
+
+---
+
+# Current Pipeline
+
+Camera
+
+↓
+
+Tracker
+
+↓
+
+TrackerResult
+
+↓
+
+Gesture Engine
+
+↓
+
+GestureEvent
+
+↓
+
+Stroke Engine
+
+↓
+
+Stroke Manager (Next)
+
+↓
+
+Renderer
+
+↓
+
+Canvas
+
+---
+
+# Module Progress
+
+| Module | Status |
+|----------|--------|
+| Core | ✅ Complete |
+| Configuration | ✅ Complete |
+| Domain | ✅ Complete |
+| Vision | ✅ Complete |
+| Gesture Recognition | ✅ Complete |
+| Vision Integration | ✅ Complete |
+| Stroke Engine | ✅ Complete |
+| Stroke Manager | ⏳ Next |
+| Renderer | ⏳ Planned |
+| Symmetry Engine | ⏳ Planned |
+| Brush Engine | ⏳ Planned |
+| Timeline | ⏳ Planned |
+| Replay | ⏳ Planned |
+| Export | ⏳ Planned |
+| UI | ⏳ Planned |
+| AI Features | ⏳ Planned |
+
+---
+
+# Current Priorities
+
+Priority 1
+
+- Stroke Manager
+
+Priority 2
+
+- Renderer
+
+Priority 3
+
+- Symmetry Engine
+
+Priority 4
+
+- Brush Engine
+
+Priority 5
+
+- Timeline
+
+---
+
+# Repository Status
+
+Architecture
+
+✅ Stable
+
+Vision Layer
+
+✅ Frozen
+
+Drawing Layer
+
+🟡 Active Development
+
+Documentation
+
+✅ Synchronized
+
+Tests
+
+✅ Passing (expected)
+
+GitHub Repository
+
+✅ Primary source of truth
+
+---
+
+# Notes for Future Development
+
+Guidelines
+
+- Do not redesign completed architecture.
+- Do not regenerate existing modules.
+- Modify only the subsystem being actively developed.
+- Maintain backward compatibility.
+- Preserve Clean Architecture and SOLID principles.
+- Keep Vision isolated from Drawing.
+
+---
+
+# Next Milestone
+
+**Milestone 5B — Stroke Manager**
+
+Responsibilities
+
+- Store completed Stroke objects
+- Active Stroke management
+- Multiple Stroke support
+- Undo-ready architecture
+- Redo-ready architecture
+- Layer association
+- Stroke retrieval APIs
+
+The Stroke Manager will prepare the project for the Renderer while keeping rendering responsibilities completely separate.

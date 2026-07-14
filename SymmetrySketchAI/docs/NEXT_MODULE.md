@@ -1,143 +1,283 @@
-# Next Module
+# Next Development Task
 
-Current Phase
-
-Milestone 4C — Vision Integration Demo
+Last Updated: July 2026
 
 ---
 
-Generate ONLY
+# Current Project Status
 
-demo/vision_demo.py
+Current Milestone
 
-(plus, if needed, a thin `demo/__init__.py`)
+> **Milestone 5A — Stroke Engine** ✅ Complete
 
----
+Current Development Phase
 
-Do NOT modify
+> **Drawing Pipeline**
 
-Core
+The Vision subsystem is complete and feature frozen.
 
-Domain
+The project has successfully transitioned from computer vision into the drawing architecture.
 
-Vision Foundation
-
-Gesture Recognition
-
-Tests
+The next milestone continues building the drawing subsystem.
 
 ---
 
-Do NOT regenerate
+# Next Milestone
 
-Enums
-
-Exceptions
-
-IDs
-
-Stroke / Layer / Brush / CanvasState / Project / GestureEvent
-
-Tracker / TrackerResult / Hand / Landmarks
-
-GestureEngine / GestureClassifier / LandmarkSmoother
+## Milestone 5B — Stroke Manager
 
 ---
 
-# Goal
+# Objective
 
-Build a small, runnable end-to-end demo that wires the finished vision
-pipeline together:
+Implement the Stroke Manager.
 
-HandTracker.read_frame() → TrackerResult
-→ GestureEngine.process() → GestureEvent(s)
-→ print / overlay the recognized gesture live from the webcam
+The Stroke Manager will become the central repository for every completed Stroke object.
 
-The demo opens the camera via `HandTracker`, feeds each `TrackerResult`
-into a `GestureEngine`, and prints (or draws) the recognized gesture,
-confidence, and velocity per hand in real time. It wires the
-`EventBus` so a simple subscriber logs `GestureRecognizedEvent`s.
+It is responsible for managing strokes.
 
-It must contain NO new business logic: it only composes existing
-components. Any camera/overlay code stays inside the demo module so the
-library packages remain UI-free.
+It is **NOT** responsible for rendering.
+
+It is **NOT** responsible for symmetry.
+
+It is **NOT** responsible for replay.
+
+Those responsibilities belong to future modules.
 
 ---
 
-# Why this is required BEFORE the Drawing layer
+# Responsibilities
 
-The Drawing layer (Milestone 5) consumes `GestureEvent`s to create and
-mutate `Stroke` objects. Everything it does is downstream of, and
-totally dependent on, the gesture stream being correct. If we start
-building strokes before validating that stream end-to-end against a
-**real webcam**, any flaw gets baked into the drawing pipeline and
-becomes expensive to unwind.
+The Stroke Manager should support
 
-Unit tests prove each vision component in isolation with synthetic
-landmarks, but they cannot prove the *integrated, real-world* behavior
-that the Drawing layer will rely on:
-
-1. **Real MediaPipe output** — tests use hand-crafted landmarks. Only a
-   live camera confirms the classifier thresholds (pinch distance,
-   finger-extension deadzone) hold up against actual MediaPipe data and
-   real lighting/hand variation.
-2. **Smoothing vs. latency trade-off** — `SMOOTHING_WINDOW_SIZE` and
-   `GESTURE_HOLD_FRAMES_TO_CONFIRM` need tuning against perceived lag.
-   That judgment can only be made by feel, on live video.
-3. **Swipe reliability** — motion thresholds (`SWIPE_MIN_DISPLACEMENT`,
-   `SWIPE_MIN_SPEED`) must be validated against genuine hand speed so
-   undo/redo don't misfire mid-stroke.
-4. **Coordinate correctness** — confirms the mirrored-feed orientation
-   and normalized-to-canvas mapping are right before strokes depend on
-   fingertip position.
-5. **Frame-rate headroom** — verifies tracking + gesture recognition
-   run fast enough per frame to leave budget for rendering.
-
-Milestone 4C is the cheap checkpoint: a throwaway-friendly harness that
-de-risks the entire drawing pipeline. Once gestures are proven correct
-and responsive live, Milestone 5 (Drawing) can build on solid ground.
+- Store completed strokes
+- Remove strokes
+- Retrieve strokes
+- Clear all strokes
+- Track active stroke
+- Track completed strokes
+- Prepare for Undo
+- Prepare for Redo
+- Layer association
+- Stroke lookup
 
 ---
 
-Generate nothing else.
+# Expected Data Flow
 
-# Milestone 5 -- Drawing Pipeline (Stroke Engine)
+Camera
 
-(Supersedes the Phase 3A section above.)
+↓
 
-Why Vision is now complete:
+Tracker
 
-The full vision chain -- camera capture, MediaPipe hand-landmark inference,
-domain-clean TrackerResult conversion, landmark smoothing, stateless pose
-classification, and the temporal GestureEngine that emits debounced
-GestureEvents (with velocity, pressure estimate, and transition info) -- is
-implemented, unit-tested, and now integration-verified end-to-end via
-examples/vision_demo.py and tests/integration/test_vision_pipeline.py. The
-vision layer emits GestureEvent value objects with zero OpenCV/MediaPipe leakage,
-so downstream layers can consume them without any vision dependency.
+↓
 
-Why Drawing is the next logical dependency:
+Gesture Engine
 
-Per the project data flow (Camera -> Tracker -> Gesture Engine -> Stroke Engine
--> Renderer), the Stroke Engine is the immediate consumer of GestureEvent. It is
-the first layer that turns recognized intent into artwork:
+↓
 
-- POINT -> begin/extend a Stroke (fingertip -> Point, pressure_estimate -> width)
-- OPEN_PALM -> pause/end the active stroke
-- FIST -> erase
-- PINCH -> precision / color pick
-- SWIPE_LEFT / SWIPE_RIGHT -> undo / redo (via the timeline layer, later)
+GestureEvent
 
-The domain already provides Stroke, Point, Layer, and CanvasState, and the
-EventBus already carries GestureRecognizedEvent -- so the Stroke Engine can
-subscribe without importing the vision layer. Nothing further in the vision
-layer is required before drawing can begin.
+↓
 
-Milestone 5 generates ONLY:
+Stroke Engine
 
-- drawing/__init__.py
-- drawing/stroke_engine.py
-- tests/unit/test_stroke_engine.py
+↓
 
-Do NOT modify core, config, domain, vision, examples, or existing tests.
-Import existing modules; never regenerate them.
+Stroke Manager
+
+↓
+
+Renderer (Future)
+
+↓
+
+Canvas
+
+---
+
+# Files to Create
+
+Create ONLY
+
+```text
+drawing/
+
+    stroke_manager.py
+```
+
+Generate
+
+```text
+tests/
+
+    unit/
+
+        test_stroke_manager.py
+```
+
+No additional modules.
+
+No renderer.
+
+No symmetry.
+
+No replay.
+
+---
+
+# Existing Modules That Must Be Reused
+
+Reuse existing
+
+- Stroke
+- Point
+- Brush
+- Layer
+- Stroke Engine
+
+Do NOT duplicate any domain entities.
+
+---
+
+# Files That Must Not Change
+
+Do not modify
+
+```text
+vision/
+
+core/
+
+config/
+
+domain/
+
+examples/
+
+stroke_engine.py
+```
+
+unless a critical bug prevents Milestone 5B from functioning.
+
+---
+
+# Architecture Rules
+
+The Stroke Manager owns Stroke storage.
+
+The Renderer will never own strokes.
+
+The Renderer will request strokes from the Stroke Manager.
+
+The Stroke Manager must not know anything about
+
+- OpenCV
+- MediaPipe
+- Camera
+- Rendering
+- UI
+
+Keep it completely independent.
+
+---
+
+# Future Compatibility
+
+Design the API for future support of
+
+- Undo
+- Redo
+- Replay
+- Timeline
+- Layer editing
+- SVG export
+- PNG export
+- AI editing
+
+Do not implement those features.
+
+Only prepare the architecture.
+
+---
+
+# Testing
+
+Generate unit tests covering
+
+- Add Stroke
+- Remove Stroke
+- Clear All
+- Multiple Strokes
+- Empty Manager
+- Active Stroke
+- Invalid Removal
+- Retrieval APIs
+
+Do not require
+
+- Camera
+- MediaPipe
+- OpenCV
+- GUI
+
+---
+
+# Definition of Done
+
+Milestone 5B is complete only if
+
+- Stroke Manager stores strokes correctly.
+- Existing Stroke objects are reused.
+- No Vision code is modified.
+- No Renderer is implemented.
+- Unit tests pass.
+- Documentation is updated.
+
+---
+
+# Workflow
+
+Before implementing the milestone
+
+1. Read the GitHub repository.
+2. Read README.md.
+3. Read every file inside docs/.
+4. Inspect the current architecture.
+
+Do not narrate this process.
+
+Use the repository as the only source of truth.
+
+---
+
+# Expected Deliverables
+
+- stroke_manager.py
+- test_stroke_manager.py
+- Updated documentation
+- Pull Request summary
+- Recommended Git commit message
+
+---
+
+# Milestone After 5B
+
+Milestone 5C — Renderer
+
+The Renderer will be responsible for drawing every Stroke onto the canvas.
+
+It will never permanently modify pixels.
+
+Every frame will be rendered entirely from Stroke objects.
+
+This architectural decision enables
+
+- Undo
+- Replay
+- SVG Export
+- AI Editing
+- Symmetry Rendering
+
+without redesigning the project.

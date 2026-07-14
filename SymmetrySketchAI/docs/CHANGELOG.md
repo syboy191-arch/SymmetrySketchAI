@@ -1,124 +1,102 @@
-# Changelog
+---
+
+# Milestone 4D — Gesture Recognition Stabilization
+
+Status: ✅ Completed
+
+## Overview
+
+This milestone focused exclusively on improving the quality and stability of the Gesture Recognition subsystem.
+
+No new features were introduced.
+
+No architectural changes were made.
+
+The goal was to improve recognition accuracy while preserving the existing Vision architecture.
+
+## Improvements
+
+- Refined gesture classification rules.
+- Improved confidence calculations.
+- Reduced false positives.
+- Improved distinction between Pinch and Closed Fist.
+- Improved temporal stability.
+- Reduced gesture flickering.
+- Improved smoothing behaviour.
+- Refined gesture transition handling.
+- Updated unit tests.
+- Updated integration tests.
+
+## Result
+
+Vision subsystem is now considered stable.
+
+Gesture recognition accuracy significantly improved.
+
+The Vision layer is now feature frozen.
+
+Only bug fixes should be performed in future milestones.
 
 ---
 
-## Phase 1
+# Milestone 5A — Stroke Engine Foundation
 
-Created
+Status: ✅ Completed
 
-Core infrastructure
+## Overview
 
-- constants.py
-- enums.py
-- exceptions.py
-- logger.py
-- paths.py
+This milestone introduced the first component of the Drawing subsystem.
 
----
+The Stroke Engine converts GestureEvents into editable Stroke objects.
 
-## Phase 2A
+No rendering functionality was introduced.
 
-Created
+No Vision modules were modified.
 
-Domain Foundations
+## New Files
 
-- layer.py
-- brush.py
+drawing/
 
-Added unit tests.
+- stroke_engine.py
+- __init__.py
 
----
+tests/unit/
 
-## Phase 2B
+- test_stroke_engine.py
 
-Created
+## Features
 
-Editor State
+- Stroke lifecycle management
+- Stroke creation
+- Point appending
+- Stroke finalization
+- Stroke cancellation
+- Active stroke tracking
+- Stroke reset functionality
 
-- canvas_state.py
-- project.py
-- gesture_event.py
+## Architectural Notes
 
-Added unit tests.
+The Stroke Engine separates user input from rendering.
 
----
+Future systems such as the Renderer, Replay System, SVG Export, AI Shape Correction, and Symmetry Engine will consume Stroke objects instead of interacting directly with gesture data.
 
-## Phase 3 — Infrastructure
+This keeps the Drawing subsystem modular and extensible.
 
-Created
+## Testing
 
-- events.py (thread-safe publish/subscribe EventBus)
-- dependency_container.py (lazy, type-keyed DI container)
+Added unit tests covering
 
-Added unit tests.
+- Stroke creation
+- Point appending
+- Stroke completion
+- Stroke cancellation
+- Invalid transitions
+- Reset behaviour
+- Large stroke handling
+- Sequential stroke handling
 
----
+## Result
 
-## Milestone 4A — Vision Foundation
+The project has officially transitioned from Vision development into Drawing Pipeline development.
 
-Created the vision layer's tracking foundation, isolating all
-OpenCV / MediaPipe types behind project-owned value objects.
-
-- vision/tracker.py (camera capture + MediaPipe Tasks inference)
-- vision/tracker_result.py
-- vision/hand.py
-- vision/landmarks.py
-- vision/utils/coordinate_utils.py
-
----
-
-## Milestone 4B — Gesture Recognition  (this release)
-
-Added the Gesture Recognition layer on top of the Vision Foundation.
-Converts raw tracked hands into debounced, semantic GestureEvents.
-
-Created:
-
-- vision/smoothing.py — `LandmarkSmoother`, `MovingAverage`, `SmoothingError`
-- vision/gesture_classifier.py — stateless static-pose classifier
-  (POINT, PINCH, OPEN_PALM, FIST, PEACE_SIGN, THUMBS_UP)
-- vision/gesture_engine.py — stateful engine adding smoothing,
-  frame-hold confirmation (debounce), motion-based SWIPE_LEFT/RIGHT,
-  velocity, pinch pressure estimate, per-hand transition tracking, and
-  optional `GestureRecognizedEvent` publication on the EventBus
-
-Added unit tests:
-
-- tests/unit/test_smoothing.py
-- tests/unit/test_gesture_classifier.py
-- tests/unit/test_gesture_engine.py
-
-Reused existing APIs with no duplication: `core.enums.GestureType` /
-`HandLabel`, `domain.entities.gesture_event.GestureEvent`,
-`vision.landmarks.Landmarks`, `vision.hand.Hand`,
-`vision.tracker_result.TrackerResult`, `core.events.EventBus`,
-`config.tracker_config.TrackerConfig`, and
-`core.exceptions.GestureRecognitionError`. No existing module changed.
-
----
-
-## Current
-
-Preparing Milestone 4C — Vision Integration Demo
-
----
-
-## Milestone 4C
-
-Vision Integration Demo (integration only -- no new business logic).
-
-Created
-
-- examples/__init__.py
-- examples/vision_demo.py
-- tests/integration/__init__.py
-- tests/integration/test_vision_pipeline.py
-
-Integrated (no modules regenerated or modified)
-
-- HandTracker, TrackerResult, Hand, Landmarks
-- GestureClassifier, GestureEngine, LandmarkSmoother
-- DependencyContainer, EventBus, AppConfig, TrackerConfig
-
-Verified the Camera -> Tracker -> GestureEngine pipeline end-to-end. The Vision
-subsystem is now complete.
+The next milestone will implement the Stroke Manager.
