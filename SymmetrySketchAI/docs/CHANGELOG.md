@@ -100,3 +100,25 @@ Reused existing APIs with no duplication: `core.enums.GestureType` /
 ## Current
 
 Preparing Milestone 4C — Vision Integration Demo
+
+---
+
+## Milestone 4C
+
+Vision Integration Demo (integration only -- no new business logic).
+
+Created
+
+- examples/__init__.py
+- examples/vision_demo.py
+- tests/integration/__init__.py
+- tests/integration/test_vision_pipeline.py
+
+Integrated (no modules regenerated or modified)
+
+- HandTracker, TrackerResult, Hand, Landmarks
+- GestureClassifier, GestureEngine, LandmarkSmoother
+- DependencyContainer, EventBus, AppConfig, TrackerConfig
+
+Verified the Camera -> Tracker -> GestureEngine pipeline end-to-end. The Vision
+subsystem is now complete.

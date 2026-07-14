@@ -100,3 +100,44 @@ and responsive live, Milestone 5 (Drawing) can build on solid ground.
 ---
 
 Generate nothing else.
+
+# Milestone 5 -- Drawing Pipeline (Stroke Engine)
+
+(Supersedes the Phase 3A section above.)
+
+Why Vision is now complete:
+
+The full vision chain -- camera capture, MediaPipe hand-landmark inference,
+domain-clean TrackerResult conversion, landmark smoothing, stateless pose
+classification, and the temporal GestureEngine that emits debounced
+GestureEvents (with velocity, pressure estimate, and transition info) -- is
+implemented, unit-tested, and now integration-verified end-to-end via
+examples/vision_demo.py and tests/integration/test_vision_pipeline.py. The
+vision layer emits GestureEvent value objects with zero OpenCV/MediaPipe leakage,
+so downstream layers can consume them without any vision dependency.
+
+Why Drawing is the next logical dependency:
+
+Per the project data flow (Camera -> Tracker -> Gesture Engine -> Stroke Engine
+-> Renderer), the Stroke Engine is the immediate consumer of GestureEvent. It is
+the first layer that turns recognized intent into artwork:
+
+- POINT -> begin/extend a Stroke (fingertip -> Point, pressure_estimate -> width)
+- OPEN_PALM -> pause/end the active stroke
+- FIST -> erase
+- PINCH -> precision / color pick
+- SWIPE_LEFT / SWIPE_RIGHT -> undo / redo (via the timeline layer, later)
+
+The domain already provides Stroke, Point, Layer, and CanvasState, and the
+EventBus already carries GestureRecognizedEvent -- so the Stroke Engine can
+subscribe without importing the vision layer. Nothing further in the vision
+layer is required before drawing can begin.
+
+Milestone 5 generates ONLY:
+
+- drawing/__init__.py
+- drawing/stroke_engine.py
+- tests/unit/test_stroke_engine.py
+
+Do NOT modify core, config, domain, vision, examples, or existing tests.
+Import existing modules; never regenerate them.

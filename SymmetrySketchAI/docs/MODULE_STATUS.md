@@ -111,4 +111,48 @@ of the complete project.
 
 > Note: this file previously reported "Phase 3A / core/events.py" but the
 > Infrastructure and Vision Foundation phases had already shipped on
-> `main`. Status is now reconciled with the actual repository contents.
+> `main`. Status is now reconciled with the actual repository contents.### Vision (COMPLETE)
+
+✅ tracker.py (HandTracker)
+
+✅ tracker_result.py
+
+✅ hand.py
+
+✅ landmarks.py
+
+✅ gesture_classifier.py
+
+✅ gesture_engine.py
+
+✅ smoothing.py
+
+✅ utils/coordinate_utils.py
+
+---
+
+### Examples
+
+✅ examples/vision_demo.py
+
+---
+
+### Integration Tests
+
+✅ test_vision_pipeline.py
+
+---
+
+# Milestone 4C
+
+Vision Foundation + Gesture Recognition integrated and verified end-to-end.
+
+# Next Module
+
+Milestone 5 -- Drawing Pipeline (Stroke Engine)
+
+# Progress
+
+Approximately 45% of the complete project (Core, Domain, Infrastructure,
+Vision + Gesture complete and integration-verified).
+
